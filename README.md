@@ -27,7 +27,7 @@ Este projeto de exemplo utiliza Docker.
    ```bash
    docker-compose up --build
 
-*Aguarde até aparecer a mensagem "Server running on port 3004". O banco será criado, migrado e populado automaticamente.*
+*Aguarde até aparecer a mensagem "Servidor rodando na porta: 3004". O banco será criado, migrado e populado automaticamente.*
 
 -----
 
