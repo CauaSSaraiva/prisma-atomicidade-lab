@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # Serviço do Banco de Dados
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ticket_db
+    ports:
+      - "3307:3306" # Mapeia a porta 3306 do Docker para a 3307 do PC (evita conflito com MySQL local)
+    volumes:
+      - mysql_data:/var/lib/mysql # Persiste os dados mesmo se desligar o container
+
+  # Serviço da sua API
+  api:
+    build: ./api # Aponta para a pasta onde está o Dockerfile
+    ports:
+      - "3004:3004" # Libera a porta 3004 para o PC acessar
+    depends_on:
+      - db # Espera o banco iniciar
+    environment:
+      # Dentro do Docker, o host do banco não é 'localhost', é o nome do serviço: 'db'
+      DATABASE_URL: "mysql://root:root@db:3306/ticket_db"
+      PORT: 3004
+
+volumes:
+  mysql_data:
