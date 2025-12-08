@@ -1,4 +1,10 @@
 // teste-caos.js
+
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
+
+
 const PORTA = 3004;
 const BASE_URL = `http://localhost:${PORTA}`;
 const EVENTO_ID = '55555555-5555-5555-5555-555555555555';
@@ -20,6 +26,19 @@ async function verificarLog() {
     
   } catch (e) {
     console.log('\n Erro ao ler log (API offline?)');
+  }
+}
+
+// Resetar banco para testes entre diferentes rotas (boa e ruim)
+async function resetarBanco() {
+  process.stdout.write('\nResetando banco de dados (Seed)... ');
+  try {
+    // Comando que entra no container e roda o seed
+    await execPromise('docker-compose exec api npx prisma db seed'); 
+    console.log('Banco Limpo.');
+  } catch (e) {
+    console.error('\n Erro ao rodar seed. O Docker está rodando?');
+    process.exit(1);
   }
 }
 
@@ -55,14 +74,16 @@ async function atacar(nome, rota) {
 }
 
 async function main() {
-  console.log(` INICIANDO TESTE MANUAL`);
-  console.log(`(Lembre-se de rodar 'npx prisma db seed' antes de cada teste)`);
+  console.log(` INICIANDO LAB DE CONCORRENCIA`);
+  console.log(`O script irá resetar o banco automaticamente via Docker.`);
 
 
   // 1. Teste Vulnerável (Lost Update, Zombie Transaction...)
+  await resetarBanco();
   await atacar('ROTA RUIM (Vulnerável)', '/ingressos/comprar-ruim');
 
   // 2. Teste Seguro (Atomicidade)
+  await resetarBanco();
   await atacar('ROTA BOA (Segura)', '/ingressos/comprar-bom');
 }
 

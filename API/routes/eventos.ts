@@ -12,7 +12,6 @@ router.post("/", async (req, res) => {
     try {
       const { nome, totalIngressos } = req.body;
 
-      // 1. Criar o responsável
       const evento = await prisma.evento.create({
         data: {
           nome: nome,
@@ -50,7 +49,7 @@ router.get("/log", async (req, res) => {
         data: log,
       });
     } catch (error) {
-      console.error("Erro ao buscar eventos:", error);
+      console.error("Erro ao processar log:", error);
       res.status(500).json({ error: "Erro ao processar a solicitação" });
     }
   });
