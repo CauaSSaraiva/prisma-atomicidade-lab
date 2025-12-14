@@ -24,6 +24,20 @@ services:
       # Dentro do Docker, o host do banco não é 'localhost', é o nome do serviço: 'db'
       DATABASE_URL: "mysql://root:root@db:3306/ticket_db"
       PORT: 3004
+  k6:
+    image: grafana/k6:latest
+    container_name: k6-load-tester
+    # Mapeia a pasta atual (.) para dentro do container (/app)
+    # Assim o k6 consegue ler o script .js
+    volumes:
+      - ./:/app
+    working_dir: /app
+    # Importante: conecta na mesma rede da API para poder chamá-la
+    networks:
+      - default
+    entrypoint: [] 
+    # O comando "cat" mantém o container vivo mas sem fazer nada se der 'up',
+    command: ["cat"]
 
 volumes:
   mysql_data:

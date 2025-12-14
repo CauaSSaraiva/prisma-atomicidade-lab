@@ -44,7 +44,7 @@ router.get("/log", async (req, res) => {
         reservas: {totalReservas}
       }
 
-      res.status(201).json({
+      res.status(200).json({
         message: "Log do teste gerado com sucesso",
         data: log,
       });

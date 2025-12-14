@@ -1,0 +1,12 @@
+{
+  "name": "lab-atomicidade-orchestrator",
+  "version": "1.0.0",
+  "description": "Orquestrador de testes",
+  "scripts": {
+    "start": "docker-compose up --build",
+    "db:reset": "docker-compose exec api npx prisma db seed",
+    "k6:run": "docker-compose run --rm k6 k6 run",
+    "test:vulnerable": "npm run db:reset && npm run k6:run -- -e ROTA=/ingressos/comprar-ruim teste.js",
+    "test:safe": "npm run db:reset && npm run k6:run -- -e ROTA=/ingressos/comprar-bom teste.js"
+  }
+}

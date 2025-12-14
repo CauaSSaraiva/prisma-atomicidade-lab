@@ -58,7 +58,7 @@ router.post("/comprar-bom", async (req, res) => {
         // Se ninguém foi atualizado, significa que não existia ingresso suficiente
         // e invéz de erro silencioso, lançamos erro e a transaction vai dar rollback
         // evitando de chegar na criação de reservas fantasmas (zombie transaction)
-        throw new Error("Não há ingressos suficientes (Rollback forçado)");
+        throw new Error("Não há ingressos suficientes"); // Rollback Forçado
       }
 
       // Se chegou aqui, garantiu o ingresso. Cria a reserva.
