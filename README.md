@@ -1,12 +1,14 @@
 # Rest API: Estudo de Concorrência e Atomicidade
 
-Este projeto é um laboratório prático demonstrando problemas de **Condição de Corrida (Race Conditions)** e como solucioná-los utilizando **Transações Atômicas** e **Locking** com Prisma ORM e MySQL.
+Este projeto é um laboratório prático que demonstra como o padrão **Read-Modify-Write** realizado na camada de aplicação pode gerar **Race Conditions**, mesmo em ambientes **single-thread como o Node.js**.
+
+A falha ocorre por **falta de atomicidade** entre leitura e escrita sob concorrência, resultando em **Lost Updates** e inconsistência de dados. A solução correta é delegar **atomicidade e isolamento** ao banco de dados, utilizando **operações atômicas dentro de transações**.
 
 ## O Problema: "Lost Update" e Overselling
 
 Quando múltiplos usuários tentam comprar o último ingresso simultaneamente, sistemas sem tratamento de concorrência falham duplamente.
 
-1. **Lost Update (Estoque Incorreto):** Várias threads leem o saldo inicial (10), subtraem 1 e salvam 9. O banco termina dizendo que ainda sobram ingressos (ex: 7), ignorando as outras vendas.
+1. **Lost Update (Estoque Incorreto):** Múltiplas requisições concorrentes leem o saldo inicial (10), subtraem 1 e salvam 9. O banco termina dizendo que ainda sobram ingressos (ex: 7), ignorando as outras vendas.
 
 2. **Overselling (Vendas Excedentes):** Como todas as 20 threads "acharam" que havia estoque, a aplicação cria **20 reservas confirmadas** para apenas 10 assentos reais.
 
@@ -116,7 +118,7 @@ Esta rota delega a responsabilidade para o banco de dados (ACID), dentro de uma 
       const evento = await tx.evento.updateMany({
         where: {
           id: eventoId,
-          ingressosDisponiveis: { gt: 0 }, //  Row Locking
+          ingressosDisponiveis: { gt: 0 }, // Guard Clause
         },
         data: {
           ingressosDisponiveis: { decrement: 1 }, // Atomicidade (decrement)
@@ -127,7 +129,7 @@ Esta rota delega a responsabilidade para o banco de dados (ACID), dentro de uma 
     Usa o retorno do `updateMany` para confirmar se a operação foi aceita. Se o banco retornar `count: 0`, significa que a cláusula `gt: 0` falhou (estoque esgotado).
     ```typescript
     if (evento.count === 0) {
-        throw new Error("Não há ingressos suficientes"); // Força o Rollback manual
+        throw new Error("Não há ingressos suficientes"); // Dispara o rollback
     }
     ```
     Isso cancela a transação imediatamente, impedindo a criação de reservas fantasmas.

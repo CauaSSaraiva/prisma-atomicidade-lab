@@ -47,7 +47,7 @@ router.post("/comprar-bom", async (req, res) => {
       const evento = await tx.evento.updateMany({
         where: {
           id: eventoId,
-          ingressosDisponiveis: { gt: 0 }, // A barreira direta e simples, Row Locking
+          ingressosDisponiveis: { gt: 0 }, // Guard Clause
         },
         data: {
           ingressosDisponiveis: { decrement: 1 }, // Atomicidade (decrement)
@@ -58,7 +58,7 @@ router.post("/comprar-bom", async (req, res) => {
         // Se ninguém foi atualizado, significa que não existia ingresso suficiente
         // e invéz de erro silencioso, lançamos erro e a transaction vai dar rollback
         // evitando de chegar na criação de reservas fantasmas (zombie transaction)
-        throw new Error("Não há ingressos suficientes"); // Rollback Forçado
+        throw new Error("Não há ingressos suficientes"); // Dispara o rollback
       }
 
       // Se chegou aqui, garantiu o ingresso. Cria a reserva.
