@@ -1,58 +1,38 @@
 import { Router } from "express"
-// import { verificaAutenticacao } from "../middlewares/verificaToken";
+import { criarEventoService } from "../services/evento.service";
+import { exibirEventoLog } from "../services/evento.service";
 
-
-
-import { prisma } from "../prisma";
 const router = Router()
 
 
-
 router.post("/", async (req, res) => {
-    try {
-      const { nome, totalIngressos } = req.body;
+  const { nome, totalIngressos } = req.body;
 
-      const evento = await prisma.evento.create({
-        data: {
-          nome: nome,
-          totalIngressos: Number(totalIngressos),
-          ingressosDisponiveis: Number(totalIngressos)
-        }
-      });
-
-      res.status(201).json({
-        message: "Evento Criado com Sucesso",
-        data: evento,
-      });
-    } catch (error) {
-      console.error("Erro ao adicionar evento:", error);
-      res.status(500).json({ error: "Erro ao processar a solicitação" });
-    }
+  const resultado = await criarEventoService({
+    nome,
+    totalIngressos: Number(totalIngressos)
   });
+
+  if (resultado.ok) {
+    return res.status(201).json(resultado.data);
+  }
+
+  return res.status(400).json({ error: "Erro " + resultado.erro });
+});
 
 router.get("/log", async (req, res) => {
-    try {
 
-      const evento = await prisma.evento.findMany({ });
+    const resultado = await exibirEventoLog()
 
-      const totalReservas = await prisma.reserva.count({
-        where: { eventoId: "55555555-5555-5555-5555-555555555555" },
-      });
-
-      const log = {
-        evento: {evento},
-        reservas: {totalReservas}
-      }
-
-      res.status(200).json({
-        message: "Log do teste gerado com sucesso",
-        data: log,
-      });
-    } catch (error) {
-      console.error("Erro ao processar log:", error);
-      res.status(500).json({ error: "Erro ao processar a solicitação" });
+    if (resultado.ok) {
+      return res.status(200).json({
+        message: "Log Gerado",
+        data: resultado.data
+      })
     }
-  });
+      
+    return res.status(500).json({ error: "Erro " + resultado.erro });
+});
 
 
 

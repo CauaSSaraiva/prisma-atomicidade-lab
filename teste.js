@@ -42,8 +42,8 @@ export function teardown(data) {
 
   const json = res.json(); 
 
-  const disponiveis = json.data.evento.evento[0].ingressosDisponiveis;
-  const totalReservas = json.data.reservas.totalReservas;
+  const disponiveis = json.data.eventos[0].ingressosDisponiveis;
+  const totalReservas = json.data.totalReservas;
 
   console.log("=".repeat(30));
   console.log(` RESULTADO FINAL (Log do Banco)`);
